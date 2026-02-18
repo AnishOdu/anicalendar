@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quarterly Calendar with Selectors</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .top-bar {
+      text-align: center;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    select {
+      padding: 5px 10px;
+      font-size: 16px;
+    }
+
+    .quarter {
+      margin-bottom: 40px;
+    }
+
+    .quarter h2 {
+      margin-left: 20px;
+    }
+
+    .quarter-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    .month {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .month h3 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .header, .week {
+      display: grid;
+      grid-template-columns: 40px repeat(7, 1fr);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .header div {
+      font-weight: bold;
+      padding: 4px 0;
+      background: #f0f0f0;
+    }
+
+    .week-number {
+      font-weight: bold;
+      background: #fafafa;
+      padding: 4px 0;
+    }
+
+    .day {
+      padding: 4px 0;
+      min-height: 22px;
+    }
+
+    .sunday {
+      background-color: #ffe5e5;
+      color: #c00000;
+    }
+
+    .saturday {
+      background-color: #e6f0ff;
+      color: #003399;
+    }
+
+    .today {
+      background: #4CAF50 !important;
+      color: white !important;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Quarterly Calendar</h1>
+
+<div class="top-bar">
+  <div>
+    Year:
+    <select id="yearSelect"></select>
+  </div>
+
+  <div>
+    Quarter:
+    <select id="quarterSelect">
+      <option value="all">All</option>
+      <option value="0">Q1</option>
+      <option value="1">Q2</option>
+      <option value="2">Q3</option>
+      <option value="3">Q4</option>
+    </select>
+  </div>
+</div>
+
+<div id="calendar"></div>
+
+<script>
+  const yearSelect = document.getElementById("yearSelect");
+  const quarterSelect = document.getElementById("quarterSelect");
+  const calendarContainer = document.getElementById("calendar");
+  const currentYear = new Date().getFullYear();
+
+  for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+    const option = document.createElement("option");
+    option.value = y;
+    option.textContent = y;
+    if (y === currentYear) option.selected = true;
+    yearSelect.appendChild(option);
+  }
+
+  function getWeekNumber(date) {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDays = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDays + firstDayOfYear.getDay() + 1) / 7);
+  }
+
+  function generateCalendar(year, selectedQuarter) {
+    calendarContainer.innerHTML = "";
+    const today = new Date();
+
+    const months = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+
+    const startQ = selectedQuarter === "all" ? 0 : parseInt(selectedQuarter);
+    const endQ = selectedQuarter === "all" ? 3 : parseInt(selectedQuarter);
+
+    for (let q = startQ; q <= endQ; q++) {
+      const quarterDiv = document.createElement("div");
+      quarterDiv.className = "quarter";
+
+      const quarterTitle = document.createElement("h2");
+      quarterTitle.innerText = "Q" + (q + 1);
+      quarterDiv.appendChild(quarterTitle);
+
+      const quarterRow = document.createElement("div");
+      quarterRow.className = "quarter-row";
+
+      for (let m = q * 3; m < q * 3 + 3; m++) {
+        const monthDiv = document.createElement("div");
+        monthDiv.className = "month";
+
+        const monthTitle = document.createElement("h3");
+        monthTitle.innerText = months[m];
+        monthDiv.appendChild(monthTitle);
+
+        const header = document.createElement("div");
+        header.className = "header";
+        header.innerHTML = `
+          <div>Wk</div>
+          <div>Sun</div><div>Mon</div><div>Tue</div>
+          <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        `;
+        monthDiv.appendChild(header);
+
+        const firstDate = new Date(year, m, 1);
+        const lastDate = new Date(year, m + 1, 0);
+        let current = new Date(firstDate);
+
+        while (current.getDay() !== 0) {
+          current.setDate(current.getDate() - 1);
+        }
+
+        while (current <= lastDate || current.getDay() !== 0) {
+          const weekRow = document.createElement("div");
+          weekRow.className = "week";
+
+          const weekNumDiv = document.createElement("div");
+          weekNumDiv.className = "week-number";
+          weekNumDiv.innerText = getWeekNumber(current);
+          weekRow.appendChild(weekNumDiv);
+
+          for (let i = 0; i < 7; i++) {
+            const dayDiv = document.createElement("div");
+            dayDiv.className = "day";
+
+            const dayOfWeek = current.getDay();
+
+            if (current.getMonth() === m) {
+              dayDiv.innerText = current.getDate();
+
+              if (dayOfWeek === 0) dayDiv.classList.add("sunday");
+              if (dayOfWeek === 6) dayDiv.classList.add("saturday");
+
+              if (
+                current.getDate() === today.getDate() &&
+                current.getMonth() === today.getMonth() &&
+                current.getFullYear() === today.getFullYear() &&
+                year === today.getFullYear()
+              ) {
+                dayDiv.classList.add("today");
+              }
+            }
+
+            weekRow.appendChild(dayDiv);
+            current.setDate(current.getDate() + 1);
+          }
+
+          monthDiv.appendChild(weekRow);
+        }
+
+        quarterRow.appendChild(monthDiv);
+      }
+
+      quarterDiv.appendChild(quarterRow);
+      calendarContainer.appendChild(quarterDiv);
+    }
+  }
+
+  function refreshCalendar() {
+    generateCalendar(parseInt(yearSelect.value), quarterSelect.value);
+  }
+
+  generateCalendar(currentYear, "all");
+
+  yearSelect.addEventListener("change", refreshCalendar);
+  quarterSelect.addEventListener("change", refreshCalendar);
+</script>
+
+</body>
+</html>
