@@ -1,27 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Quarterly Calendar with Selectors</title>
+  <title>Quarterly Calendar</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    /* ===== Top Menu Bar ===== */
+    .menu-bar {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-left button {
+      background: #3498db;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .menu-left button:hover {
+      background: #2980b9;
+    }
+
+    .menu-right {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    select {
+      padding: 5px 8px;
+      font-size: 14px;
     }
 
     h1 {
       text-align: center;
-    }
-
-    .top-bar {
-      text-align: center;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    select {
-      padding: 5px 10px;
-      font-size: 16px;
+      margin-top: 20px;
     }
 
     .quarter {
@@ -94,25 +117,32 @@
 </head>
 <body>
 
-<h1>Quarterly Calendar</h1>
-
-<div class="top-bar">
-  <div>
-    Year:
-    <select id="yearSelect"></select>
+<!-- ===== MENU BAR ===== -->
+<div class="menu-bar">
+  <div class="menu-left">
+    <button onclick="goBack()">⬅ Back</button>
   </div>
 
-  <div>
-    Quarter:
-    <select id="quarterSelect">
-      <option value="all">All</option>
-      <option value="0">Q1</option>
-      <option value="1">Q2</option>
-      <option value="2">Q3</option>
-      <option value="3">Q4</option>
-    </select>
+  <div class="menu-right">
+    <div>
+      Year:
+      <select id="yearSelect"></select>
+    </div>
+
+    <div>
+      Quarter:
+      <select id="quarterSelect">
+        <option value="all">All</option>
+        <option value="0">Q1</option>
+        <option value="1">Q2</option>
+        <option value="2">Q3</option>
+        <option value="3">Q4</option>
+      </select>
+    </div>
   </div>
 </div>
+
+<h1>Quarterly Calendar</h1>
 
 <div id="calendar"></div>
 
@@ -122,12 +152,21 @@
   const calendarContainer = document.getElementById("calendar");
   const currentYear = new Date().getFullYear();
 
+  // Populate year dropdown
   for (let y = currentYear - 10; y <= currentYear + 10; y++) {
     const option = document.createElement("option");
     option.value = y;
     option.textContent = y;
     if (y === currentYear) option.selected = true;
     yearSelect.appendChild(option);
+  }
+
+  function goBack() {
+    if (document.referrer !== "") {
+      window.history.back();
+    } else {
+      window.location.href = "index.html"; // fallback page
+    }
   }
 
   function getWeekNumber(date) {
@@ -242,4 +281,3 @@
 
 </body>
 </html>
-
